@@ -7,6 +7,11 @@ screen = pygame.display.set_mode((640,650))
 last_bagduy_spawn_time = 0
 
 score = 0
+
+shots = 0
+hits = 0
+misses = 0
+
 font = pygame.font.Font(None,20)
 
 badguy_image = pygame.image.load("images/badguy.png").convert()
@@ -79,7 +84,10 @@ class Fighter:
         screen.blit(fighter_image,(self.x,591))
 
     def fire(self):
+        global shots
+        shots+=1
         missiles.append(Missile(self.x+50))
+        
 
     def hit_by(self,badguy):
         return (
@@ -115,6 +123,9 @@ while 1:
             sys.exit()
         if event.type == KEYDOWN and event.key == K_SPACE:
             fighter.fire()
+            time.wait(0.5)
+            if event.type == KEYDOWN and event.key == K_SPACE:
+                fighter.fire()
             
                         
     pressed_keys = pygame.key.get_pressed()    
@@ -145,6 +156,7 @@ while 1:
         missiles[i].draw()
         if missiles[i].off_screen():
             del missiles[i]
+            misses += 1
             i -= 1
         i += 1
 
@@ -154,9 +166,10 @@ while 1:
         while j < len(missiles):
             if badguys[i].touching(missiles[j]):
                 badguys[i].score()
+                hits += 1
                 del badguys[i]
                 del missiles[j]
-                i -=1
+                i -= 1
                 break
             j += 1
         i += 1
@@ -166,6 +179,19 @@ while 1:
     for badguy in badguys:
         if fighter.hit_by(badguy):
             screen.blit(GAME_OVER,(170,200))
+
+            screen.blit(font.render(str(shots),True,(255,255,255)),(266,320))
+            screen.blit(font.render(str(score),True,(255,255,255)),(266,348))
+            screen.blit(font.render(str(hits),True,(255,255,255)),(400,320))
+            if misses + hits != shots:
+                screen.blit(font.render(str(shots-hits),True,(255,255,255)),(400,337))
+            else:
+                screen.blit(font.render(str(misses),True,(255,255,255)),(400,337))
+            
+            if shots == 0:
+                screen.blit(font.render("--",True(255,255,255)),(400,357))
+            else:
+                screen.blit(font.render(str((1000*hits/shots)/10.)+"%",True,(255,255,255)),(400,357))
 
             while 1:
                 for event in pygame.event.get():
