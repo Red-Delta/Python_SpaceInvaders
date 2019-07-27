@@ -4,7 +4,8 @@ pygame.init()
 clock = pygame.time.Clock()
 pygame.display.set_caption("Space Invaders")
 screen = pygame.display.set_mode((640,650))
-last_bagduy_spawn_time = 0
+last_badguy_spawn_time = 0
+last_fire_time = 0
 
 score = 0
 
@@ -115,24 +116,31 @@ class Missile:
 missiles = []
 
 fighter = Fighter()
+fighter_fire = False
 
 while 1:
     clock.tick(60)
     for event in pygame.event.get():
         if event.type == QUIT:
             sys.exit()
-        if event.type == KEYDOWN and event.key == K_SPACE:
+        if event.type == KEYDOWN and event.key == K_SPACE:            
+            fighter_fire = True
+            last_fighter_fire_time = time.time()
             fighter.fire()
-            time.wait(0.5)
-            if event.type == KEYDOWN and event.key == K_SPACE:
-                fighter.fire()
             
-                        
-    pressed_keys = pygame.key.get_pressed()    
+        if event.type == KEYUP and event.key == K_SPACE:
+            fighter_fire = False
+            
 
-    if time.time() - last_bagduy_spawn_time > 0.5:
+    if fighter_fire == True and (time.time() - last_fighter_fire_time > 0.5):
+        fighter.fire()                          
+        last_fighter_fire_time = time.time()     
+
+    pressed_keys = pygame.key.get_pressed()
+
+    if time.time() - last_badguy_spawn_time > 0.5:
         badguys.append(Badguy())
-        last_bagduy_spawn_time = time.time()
+        last_badguy_spawn_time = time.time()
 
     screen.fill((0,0,0))
     
@@ -189,13 +197,13 @@ while 1:
                 screen.blit(font.render(str(misses),True,(255,255,255)),(400,337))
             
             if shots == 0:
-                screen.blit(font.render("--",True(255,255,255)),(400,357))
+                screen.blit(font.render("--",True,(255,255,255)),(400,357))
             else:
                 screen.blit(font.render(str((1000*hits/shots)/10.)+"%",True,(255,255,255)),(400,357))
 
             while 1:
                 for event in pygame.event.get():
-                    if event.type == QUIT:
+                    if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                         sys.exit()
                     
                 pygame.display.update()
